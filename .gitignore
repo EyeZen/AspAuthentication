@@ -1,0 +1,7 @@
+*.csproj
+*.csproj.*
+Migrations/
+appsettings.*
+bin/
+obj/
+Properties/

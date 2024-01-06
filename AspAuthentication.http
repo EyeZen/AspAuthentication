@@ -1,0 +1,6 @@
+@AspAuthentication_HostAddress = http://localhost:5199
+
+GET {{AspAuthentication_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
