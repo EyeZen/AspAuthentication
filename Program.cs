@@ -45,13 +45,15 @@ builder.Services.AddSwaggerGen(option =>
 });
 
 builder.Services.AddProblemDetails();
-//builder.Services.AddApiVersioning();
+builder.Services.AddApiVersioning();
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
 // Add DB Contexts
 
 // Move the connection string to user secrets for a real app
-builder.Services.AddDbContext<ApplicationDbContext>(opt => opt.UseSqlServer("Host=localhost; Database=postgres; Username=postgres; Password=devpass"));
+builder.Services.AddDbContext<ApplicationDbContext>(opt => 
+    opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+);
 
 
 builder.Services.AddScoped<TokenService, TokenService>();
@@ -94,8 +96,8 @@ builder.Services
         options.TokenValidationParameters = new TokenValidationParameters()
         {
             ClockSkew = TimeSpan.Zero,
-            ValidateIssuer = true,
-            ValidateAudience = true,
+            ValidateIssuer = false,
+            ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ValidIssuer = validIssuer,

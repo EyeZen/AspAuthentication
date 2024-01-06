@@ -3,6 +3,7 @@ using AspAuthentication.Data.Models;
 using AspAuthentication.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using AspAuthentication.Auth.Enums;
 
 namespace AspAuthentication.Controllers
 {
@@ -31,7 +32,7 @@ namespace AspAuthentication.Controllers
             }
 
             var result = await _userManager.CreateAsync(
-                new ApplicationUser { UserName = request.Username, Email = request.Email, Role = Auth.Enums.Role.User },
+                new ApplicationUser { UserName = request.Username, Email = request.Email, Role = Role.User },
                 request.Password
             );
 

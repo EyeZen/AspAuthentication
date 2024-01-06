@@ -11,10 +11,12 @@ namespace AspAuthentication.Services
         // specify how long until the token expires
         private const int ExpirationMinutes = 30;
         private readonly ILogger<TokenService> _logger;
+        private readonly IConfiguration _config;
 
-        public TokenService(ILogger<TokenService> logger)
+        public TokenService(ILogger<TokenService> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
         }
 
         public string CreateToken(ApplicationUser user)
@@ -46,13 +48,14 @@ namespace AspAuthentication.Services
 
         private List<Claim> CreateClaims(ApplicationUser user)
         {
-            var jwtSub = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["JwtRegisterClaimNamesSub"];
+            //var jwtSub = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["JwtRegisterClaimNamesSub"];
+            var jwtSub = _config.GetSection("JwtTokenSettings")["JwtRegisteredClaimNamesSub"];
 
             try
             {
                 var claims = new List<Claim>
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, jwtSub),
+                    new Claim(JwtRegisteredClaimNames.Sub, jwtSub!),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                     new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
