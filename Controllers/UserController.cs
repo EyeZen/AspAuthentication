@@ -26,6 +26,7 @@ namespace AspAuthentication.Controllers
         [Route("register")]
         public async Task<IActionResult> Register(RegistrationRequest request)
         {
+            // TODO: What causes invalid ModelState?
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -56,7 +57,7 @@ namespace AspAuthentication.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<ActionResult<AuthResponse>> AUthentiacate([FromBody] AuthRequest request)
+        public async Task<ActionResult<AuthResponse>> Authentiacate([FromBody] AuthRequest request)
         {
             if (!ModelState.IsValid)
             {

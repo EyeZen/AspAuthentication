@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using AspAuthentication.Auth.Attributes;
 using AspAuthentication.Data;
 using AspAuthentication.Data.DTOs;
 using AspAuthentication.Data.Models;
@@ -11,6 +12,8 @@ namespace AspAuthentication.Controllers
     [ApiVersion(1.0)]
     [ApiController]
     [Route("api/[controller]")]
+    //[Authorize] // requires all routes to be authorized
+    // abstract class ControllerBase properties: https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.mvc.controllerbase?view=aspnetcore-8.0
     public class PagesController : ControllerBase
     {
         private readonly ApplicationDbContext _dbContext;
@@ -20,10 +23,12 @@ namespace AspAuthentication.Controllers
             _dbContext = dbContext;
         }
 
+        // Allow multiple roles: [Authorize(Roles="members,admin")]
         [Authorize(Roles = "Admin")]
         [HttpPost("new")]
         public async Task<ActionResult<Page>> CreatePage(PageDto pageDto)
         {
+            // TODO: when will ModelState be invalid?
             if(!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -40,6 +45,7 @@ namespace AspAuthentication.Controllers
             _dbContext.Pages.Add(page);
             await _dbContext.SaveChangesAsync();
 
+            // TODO: When to use and how to customize `CreatedAtAction` result
             return CreatedAtAction(
                 nameof(CreatePage),
                 new { id = page.Id },
@@ -47,6 +53,7 @@ namespace AspAuthentication.Controllers
              );
         }
 
+        [AllowAnonymous] // allows anonymous requests for the action endpoint, even inside [Authorize] controller
         [HttpGet("{id:int}")]
         public async Task<ActionResult<PageDto>> GetPage(int id)
         {
@@ -68,6 +75,8 @@ namespace AspAuthentication.Controllers
             return pageDto;
         }
 
+        //[Authorize(Policy = "PolicyName")]  // Policy-Name: Built-In-Policy or Custom-Policy
+        //[CustomRequireClaim("Some-Claim-Name", "Some-Claim-Value")] // Can also add constraints for specific claims or other custom logic through annotation attributes
         [HttpGet]
         public async Task<PagesDto> ListPages()
         {

@@ -10,6 +10,8 @@ namespace AspAuthentication.Data
         private readonly IConfiguration _config;
 
         public DbSet<Page> Pages => Set<Page>();
+
+        // A User table is alread created by IdentityUserContext, hence below line is not required
         //public DbSet<ApplicationUser> Users { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration config)
@@ -21,11 +23,14 @@ namespace AspAuthentication.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            // How default password hasher works: https://stackoverflow.com/questions/20621950/asp-net-identitys-default-password-hasher-how-does-it-work-and-is-it-secure
+            // VerifyHashedPassword: https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.identity.passwordhasher-1.verifyhashedpassword?view=aspnetcore-8.0#microsoft-aspnetcore-identity-passwordhasher-1-verifyhashedpassword(-0-system-string-system-string)
             var hasher = new PasswordHasher<ApplicationUser>();
 
             var adminEmail = _config.GetSection("SiteSettings")["AdminEmail"];
             var adminPassword = _config.GetSection("SiteSettings")["AdminPassword"];
 
+            // Seed database (need to Update-Database to take effect)
             modelBuilder.Entity<ApplicationUser>().HasData(
                 new ApplicationUser
                 {

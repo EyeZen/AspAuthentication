@@ -35,16 +35,26 @@ namespace AspAuthentication.Services
         }
 
         private JwtSecurityToken CreateJwtToken(
-            List<Claim> claims, 
+            List<Claim> claims,
             SigningCredentials credentials, DateTime expiration
-        ) =>
-            new(
-                new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidIssuer"],
-                new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidAudience"],
-                claims,
-                expires: expiration,
-                signingCredentials: credentials
-            );
+        )
+        {
+            // Alternate way to access configurations
+            //new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["ValidIssuer"],
+            var validIssuer = _config.GetSection("JwtTokenSettings")["ValidIssuer"];
+            var validAudience = _config.GetSection("JwtTokenSettings")["ValidAudience"];
+
+            var token = new JwtSecurityToken(
+                // Options parameters, passed in the payload of the token
+                    validIssuer,
+                    validAudience,
+                    claims,
+                    expires: expiration,
+                    signingCredentials: credentials
+                );
+
+            return token;
+        }
 
         private List<Claim> CreateClaims(ApplicationUser user)
         {
@@ -53,11 +63,12 @@ namespace AspAuthentication.Services
 
             try
             {
+                // TODO: Whats the difference between `JwtRegisteredClaimNames` and `ClaimTypes`? When to use which?
                 var claims = new List<Claim>
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, jwtSub!),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),
+                    new Claim(JwtRegisteredClaimNames.Sub, jwtSub!),                                                // Subject
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),                              // Token-Id
+                    new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()),   // Issued-at
                     new Claim(ClaimTypes.NameIdentifier, user.Id),
                     new Claim(ClaimTypes.Name, user.UserName!),
                     new Claim(ClaimTypes.Email, user.Email!),
@@ -74,7 +85,7 @@ namespace AspAuthentication.Services
 
         private SigningCredentials CreateSigningCredentials()
         {
-            var symmetricSecurityKey = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("JwtTokenSettings")["SymmetricSecurityKey"];
+            var symmetricSecurityKey = _config.GetSection("JwtTokenSettings")["SymmetricSecurityKey"];
 
             return new SigningCredentials(
                 new SymmetricSecurityKey(
